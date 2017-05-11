@@ -108,7 +108,7 @@ public class LocationLooper {
             @Override
             public void run() {
                 try {
-                    String url = "http://"+Constants.serverAddress+"/record?latitude="+String.format("%.8f", location.getLatitude())+"&longitude="+String.format("%.8f", location.getLongitude());
+                    String url = "http://"+Constants.serverAddress+"/record?latitude="+String.format("%.11f", location.getLatitude())+"&longitude="+String.format("%.11f", location.getLongitude());
                     Log.d("MasterMiao", "Request url: "+url);
                     OkHttpClient client = new OkHttpClient();
                     Request request = new Request.Builder().url(url).build();
