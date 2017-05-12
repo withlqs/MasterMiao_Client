@@ -12,26 +12,30 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.RunnableFuture;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.internal.tls.OkHostnameVerifier;
 
 /**
  * Created by lqs on 5/6/17.
  */
 
 public class LocationLooper {
+    ExecutorService fixedThreadPool;
     private Activity activity = null;
     private boolean started = false;
     private LocationManager locationManager = null;
-    ExecutorService fixedThreadPool;
+
+    public LocationLooper(Activity activity) {
+        this.activity = activity;
+
+        this.locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+        this.fixedThreadPool = Executors.newFixedThreadPool(3);
+    }
 
     private synchronized boolean isStarted() {
         return started;
@@ -39,13 +43,6 @@ public class LocationLooper {
 
     private synchronized void setStarted(boolean started) {
         this.started = started;
-    }
-
-    public LocationLooper(Activity activity) {
-        this.activity = activity;
-
-        this.locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
-        this.fixedThreadPool = Executors.newFixedThreadPool(3);
     }
 
     public synchronized boolean start() {
@@ -60,6 +57,7 @@ public class LocationLooper {
         } else if (providers.contains(LocationManager.NETWORK_PROVIDER)) {
             provider = LocationManager.NETWORK_PROVIDER;
         } else {
+            Log.d("MasterMiao", "Provider has no member");
             return false;
         }
         if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {

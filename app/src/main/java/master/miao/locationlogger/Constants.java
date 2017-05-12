@@ -5,5 +5,5 @@ package master.miao.locationlogger;
  */
 
 class Constants {
-    final static String serverAddress = "127.0.0.1:8000";
+    final static String serverAddress = "miao.shellemon.com:8000";
 }
