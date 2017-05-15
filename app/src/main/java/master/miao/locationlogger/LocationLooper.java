@@ -67,7 +67,28 @@ public class LocationLooper {
         Location location = locationManager.getLastKnownLocation(provider);
         if (location != null) {
             sendToServer(location);
+        } else {
+            Log.d("MasterMiao", "location is null");
         }
+        final String finalProvider = provider;
+        fixedThreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        sendToServer(locationManager.getLastKnownLocation(finalProvider));
+                    } catch (SecurityException e) {
+                        Log.d("MasterMiao", "circle exception");
+                        e.printStackTrace();
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
         LocationListener listener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
@@ -76,7 +97,6 @@ public class LocationLooper {
 
             @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
-
             }
 
             @Override
@@ -102,6 +122,11 @@ public class LocationLooper {
     }
 
     private void sendToServer(final Location location) {
+        if (location == null) {
+            Log.d("MasterMiao", "location is null");
+            return;
+        }
+        Log.d("MasterMiao", "altitude:" + location.getAltitude() + " longitude:" + location.getLongitude());
         fixedThreadPool.execute(new Runnable() {
             @Override
             public void run() {
@@ -118,6 +143,7 @@ public class LocationLooper {
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                    Log.d("MasterMiao", "http send exception");
                 }
             }
         });
