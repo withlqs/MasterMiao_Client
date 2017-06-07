@@ -76,7 +76,7 @@ public class LocationLooper {
                         e.printStackTrace();
                     }
                     try {
-                        Thread.sleep(1500);
+                        Thread.sleep(2000);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -110,7 +110,8 @@ public class LocationLooper {
                 Log.d("MasterMiao", "Provider disabled.");
             }
         };
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, listener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1500, 1, listener);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1500, 1, listener);
 
         return true;
     }
