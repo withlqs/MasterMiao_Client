@@ -1,7 +1,6 @@
 package master.miao.locationlogger;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -25,13 +24,13 @@ import okhttp3.Response;
  */
 
 public class LocationLooper {
-    ExecutorService fixedThreadPool;
-    private Activity activity = null;
+    private ExecutorService fixedThreadPool;
+    private MainActivity activity = null;
     private boolean started = false;
     private LocationManager locationManager = null;
 
-    public LocationLooper(Activity activity) {
-        this.activity = activity;
+    public LocationLooper(MainActivity mainActivity) {
+        this.activity = mainActivity;
 
         this.locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
         this.fixedThreadPool = Executors.newFixedThreadPool(3);
@@ -51,11 +50,8 @@ public class LocationLooper {
         }
         setStarted(true);
         List<String> providers = locationManager.getProviders(true);
-        String provider = null;
         if (providers.contains(LocationManager.GPS_PROVIDER)) {
-            provider = LocationManager.GPS_PROVIDER;
         } else if (providers.contains(LocationManager.NETWORK_PROVIDER)) {
-            provider = LocationManager.NETWORK_PROVIDER;
         } else {
             Log.d("MasterMiao", "Provider has no member");
             return false;
@@ -64,25 +60,23 @@ public class LocationLooper {
             Log.d("MasterMiao", "Need permissions");
             return false;
         }
-        Location location = locationManager.getLastKnownLocation(provider);
-        if (location != null) {
-            sendToServer(location);
-        } else {
-            Log.d("MasterMiao", "location is null");
-        }
-        final String finalProvider = provider;
         fixedThreadPool.execute(new Runnable() {
             @Override
             public void run() {
+                Location location;
                 while (true) {
                     try {
-                        sendToServer(locationManager.getLastKnownLocation(finalProvider));
+                        location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                        if (location == null) {
+                            location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                        }
+                        sendToServer(location);
                     } catch (SecurityException e) {
                         Log.d("MasterMiao", "circle exception");
                         e.printStackTrace();
                     }
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(1500);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -116,7 +110,7 @@ public class LocationLooper {
                 Log.d("MasterMiao", "Provider disabled.");
             }
         };
-        locationManager.requestLocationUpdates(provider, 1000, 1, listener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, listener);
 
         return true;
     }
@@ -126,6 +120,7 @@ public class LocationLooper {
             Log.d("MasterMiao", "location is null");
             return;
         }
+        activity.setLocation(location);
         Log.d("MasterMiao", "altitude:" + location.getAltitude() + " longitude:" + location.getLongitude());
         fixedThreadPool.execute(new Runnable() {
             @Override
